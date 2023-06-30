@@ -1,0 +1,8 @@
+[project]
+name="hudson"
+version="0.1.0"
+description="A project meant to help engineers to research and develop environments that simulates real-life production use cases"
+
+[build-system]
+requires = ["setuptools", "wheel", "pydantic", "SQLAlchemy"]
+build-backend = "setuptools.build_meta"
