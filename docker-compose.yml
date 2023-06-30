@@ -27,7 +27,7 @@ services:
       dockerfile: Dockerfile
     tty: true
     volumes:
-      - ./app:/app
+      - ./Hudson:/hudson
     ports:
       - 8000:8000
     environment:

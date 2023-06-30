@@ -2,7 +2,7 @@
 FROM python:3.11
 
 # set the working directory inside the container
-WORKDIR /app
+WORKDIR /hudson
 
 # Install the required Python dependencies
 COPY ./requirements.txt .
