@@ -19,11 +19,11 @@ services:
       timeout: 5s
       retries: 10
     volumes:
-      - ./docker_resources/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   app:
     build:
-      context: ./docker_resources
+      context: .
       dockerfile: Dockerfile
     tty: true
     volumes:
@@ -36,3 +36,4 @@ services:
       - POSTGRES_DB=hudsondb
       - POSTGRES_USER=mantanav
       - POSTGRES_PASSWORD=HouseOfTemplates
+    command: pip install -e .

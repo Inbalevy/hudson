@@ -1,4 +1,0 @@
-pydantic
-pytest
-SQLAlchemy
-mypy
