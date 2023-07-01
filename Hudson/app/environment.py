@@ -19,17 +19,7 @@ class Environment(Base):
     template_id = Column(Integer, nullable=False)
     status = Column(Enum(StatusEnum), default=StatusEnum.CREATING)
     creation_time = Column(DateTime, nullable=False)
-    
-    # __table_args__ = (
-    #     CheckConstraint(
-    #         "CASE WHEN status = 'CREATING' THEN TRUE "
-    #         "WHEN status = 'ACTIVE' AND (SELECT status FROM environments WHERE id = old.id) = 'CREATING' THEN TRUE "
-    #         "WHEN status = 'DESTROYING' AND (SELECT status FROM environments WHERE id = old.id) = 'ACTIVE' THEN TRUE "
-    #         "WHEN status = 'DESTROYED' THEN TRUE ELSE FALSE END",
-    #         name='check_status_order'
-    #     ),
-    # )
-    
+
     def __repr__(self):
         return f"Environment(id={self.id}, name='{self.name}', template='{self.template_id}', status={self.status}, creation_time='{self.creation_time}')"
     
@@ -114,7 +104,7 @@ class EnvironmentActions():
         
     @staticmethod
     def update_environment_status(id: Optional[int] = None, name: Optional[str] = None) -> StatusEnum:
-        """update an environment by id or name. return True if succeeded and false if the template was already enabled
+        """update an environment by id or name. return the new environment status and raise if the environment was already destroyed
         Args:
             id (Optional[int], optional): template_id. Defaults to None.
             name (Optional[str], optional): template_name. Defaults to None.
