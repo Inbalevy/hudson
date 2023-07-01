@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
 
-from hudson.app import Template, Environment, EnvironmentActions, StatusEnum
+from hudson.models import Template, Environment, EnvironmentActions, StatusEnum
 from .db_fixtures import template, disabled_template, environment, destroyed_environment
     
 

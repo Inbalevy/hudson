@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
 
-from hudson.app import Template, TemplateActions
+from hudson.models import Template, TemplateActions
 from .db_fixtures import template, disabled_template, unused_template, environment
     
 

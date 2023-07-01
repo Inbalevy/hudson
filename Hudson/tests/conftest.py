@@ -1,5 +1,5 @@
 import pytest
-from hudson.app.base import Base, ENGINE, Session
+from hudson.models.base import Base, ENGINE, Session
 
 @pytest.fixture(scope='session')
 def db():

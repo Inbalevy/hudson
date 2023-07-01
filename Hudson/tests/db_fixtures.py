@@ -1,5 +1,5 @@
 import pytest
-from hudson.app import Template, Environment, StatusEnum
+from hudson.models import Template, Environment, StatusEnum
 from datetime import datetime
 
 
