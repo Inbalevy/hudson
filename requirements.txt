@@ -1,4 +1,5 @@
 pydantic
 pytest
+psycopg2
 SQLAlchemy
 mypy
