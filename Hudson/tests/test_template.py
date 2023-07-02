@@ -2,12 +2,12 @@ import pytest
 from datetime import datetime
 
 from hudson.models import Template, TemplateActions
-from .db_fixtures import template, disabled_template, unused_template, environment
+from .db_fixtures import template, disabled_template, unused_template, environment, test_session, client
     
 
-def test_add_template(db, template):
+def test_add_template(template, test_session):
     # Query the Template from the database
-    saved_template = db.query(Template).filter_by(id=template.id).first()
+    saved_template = test_session.query(Template).filter_by(id=template.id).first()
 
     # Assert that the saved data matches the desired values
     assert saved_template.name == 'Example Template'

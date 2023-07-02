@@ -1,17 +1,21 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Enum
 from typing import Optional
+from hudson.app import db
 
-from .base import Base, Session
+class Template(db.Model):
+    """Template model for the DB
 
-class Template(Base):
+    Args:
+        db.Model: sqlalchemy model
+    """
     __tablename__ = 'templates'
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
-    url = Column(String(255), nullable=False)
-    state = Column(Enum('ENABLED', 'DISABLED', name='state_enum'), default='ENABLED')
-    creation_time = Column(DateTime, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    url = db.Column(db.String(255), nullable=False)
+    state = db.Column(db.Enum('ENABLED', 'DISABLED', name='state_enum'), default='ENABLED')
+    creation_time = db.Column(db.DateTime, nullable=False)
     
     def __repr__(self):
         return f"Template(id={self.id}, name='{self.name}', url='{self.url}', state={self.state}, creation_time='{self.creation_time}')"
@@ -32,11 +36,11 @@ class TemplateActions():
         Returns:
             list[Template]
         """
-        with Session() as session:
-            templates = session.query(Template)
-            if only_enabled:
-                templates = templates.filter(Template.state == "ENABLED")
-            templates = templates.all()
+
+        templates = db.session.query(Template)
+        if only_enabled:
+            templates = templates.filter(Template.state == "ENABLED")
+        templates = templates.all()
         return templates
 
     @staticmethod
@@ -50,13 +54,12 @@ class TemplateActions():
         if not (id or name):
             raise ValueError("Either 'id' or 'name' must be provided.")
     
-        with Session() as session:
-            query = session.query(Template)
-            if id is not None:
-                return query.filter(Template.id == id).first()
-            elif name is not None:
-                return query.filter(Template.name == name).first()
-            return None
+        query = db.session.query(Template)
+        if id is not None:
+            return query.filter(Template.id == id).first()
+        elif name is not None:
+            return query.filter(Template.name == name).first()
+        return None
 
     @staticmethod
     def create_template(github_url: str, name: str) -> Optional[Template]:
@@ -66,16 +69,14 @@ class TemplateActions():
             github_url (int): github_url, accepted from the user
             name (Optional): repository name from github api
         """         
-        with Session() as session:
-            try:
-                template = Template(name=name, url=github_url, state="ENABLED", creation_time=datetime.now())
-                session.add(template)
-                session.commit()
-                session.refresh(template)
-            except Exception as e:
-                template = None
-                session.rollback()
-                raise
+        try:
+            template = Template(name=name, url=github_url, state="ENABLED", creation_time=datetime.now())
+            db.session.add(template)
+            db.session.commit()
+            db.session.refresh(template)
+        except Exception as e:
+            template = None
+            raise
         return template
     
     @staticmethod
@@ -85,15 +86,14 @@ class TemplateActions():
             id (Optional[int], optional): template_id. Defaults to None.
             name (Optional[str], optional): template_name. Defaults to None.
         """
-        with Session() as session:
-            if (template := TemplateActions.get_template(id=id, name=name)) is None:
-                raise ValueError("Template not found.")
+        if (template := TemplateActions.get_template(id=id, name=name)) is None:
+            raise ValueError("Template not found.")
 
-            if template.state == "ENABLED":
-                return False
+        if template.state == "ENABLED":
+            return False
 
-            template.state = "ENABLED"
-            session.commit()
+        template.state = "ENABLED"
+        db.session.commit()
 
         return True
     
@@ -104,22 +104,21 @@ class TemplateActions():
             id (Optional[int], optional): template_id. Defaults to None.
             name (Optional[str], optional): template_name. Defaults to None.
         """
-        with Session() as session:
-            if (template := TemplateActions.get_template(id=id, name=name)) is None:
-                raise ValueError("Template not found.")
+        if (template := TemplateActions.get_template(id=id, name=name)) is None:
+            raise ValueError("Template not found.")
 
-            if template.state == "DISABLED":
-                return False
+        if template.state == "DISABLED":
+            return False
 
-            # to avoid circular import issue
-            from .environment import Environment, StatusEnum
-            if (active_env := session.query(Environment).filter(
-                Environment.template_id == template.id,
-                Environment.status.in_([StatusEnum.CREATING, StatusEnum.ACTIVE])
-                ).first()):
-                raise ValueError("Cannot disable template with an active environment.")
+        # to avoid circular import issue
+        from .environment import Environment, StatusEnum
+        if (active_env := db.session.query(Environment).filter(
+            Environment.template_id == template.id,
+            Environment.status.in_([StatusEnum.CREATING, StatusEnum.ACTIVE])
+            ).first()):
+            raise ValueError("Cannot disable template with an active environment.")
 
-            template.state = "ENABLED"
-            session.commit()
+        template.state = "ENABLED"
+        db.session.commit()
 
         return True

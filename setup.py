@@ -4,7 +4,7 @@ setup(
     name="hudson",
     entry_points={
         "console_scripts": [
-            "HudsonBE = hudson.app:main"
+            "HudsonAPP = hudson.app.app:main"
         ]
     },
 )

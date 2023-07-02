@@ -2,7 +2,7 @@ from datetime import datetime
 import enum
 from sqlalchemy import Column, Integer, String, DateTime, Enum
 from typing import Optional
-from .base import Base, Session
+from hudson.app import db
 
 class StatusEnum(enum.Enum):
     CREATING = 1
@@ -11,14 +11,19 @@ class StatusEnum(enum.Enum):
     DESTROYED = 4
 
 
-class Environment(Base):
+class Environment(db.Model):
+    """Environment model for the DB
+
+    Args:
+        Base: sqlalchemy declarative_base
+    """
     __tablename__ = 'environments'
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
-    template_id = Column(Integer, nullable=False)
-    status = Column(Enum(StatusEnum), default=StatusEnum.CREATING)
-    creation_time = Column(DateTime, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    template_id = db.Column(db.Integer, db.ForeignKey('templates.id'), nullable=False)
+    status = db.Column(db.Enum(StatusEnum), default=StatusEnum.CREATING)
+    creation_time = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
     def __repr__(self):
         return f"Environment(id={self.id}, name='{self.name}', template='{self.template_id}', status={self.status}, creation_time='{self.creation_time}')"
@@ -41,18 +46,17 @@ class EnvironmentActions():
         Returns:
             list: Environment
         """
-        with Session() as session:
-            environments = session.query(Environment)
-            
-            # Assuming that if a user has chosen a specific filter it should override the default filter
-            if not (status or name) and exclude_destroyed:
-                return environments.filter(Environment.status != StatusEnum.DESTROYED).all()
-            
-            if status:
-                environments = environments.filter(Environment.status.in_(status))
-            if name:
-                environments = environments.filter(Environment.name == name) 
-            return environments.all()
+        environments = db.session.query(Environment)
+        
+        # Assuming that if a user has chosen a specific filter it should override the default filter
+        if not (status or name) and exclude_destroyed:
+            return environments.filter(Environment.status != StatusEnum.DESTROYED).all()
+        
+        if status:
+            environments = environments.filter(Environment.status.in_(status))
+        if name:
+            environments = environments.filter(Environment.name == name) 
+        return environments.all()
         
     
     @staticmethod
@@ -66,13 +70,12 @@ class EnvironmentActions():
         if not (id or name):
             raise ValueError("Either 'id' or 'name' must be provided.")
     
-        with Session() as session:
-            query = session.query(Environment)
-            if id is not None:
-                return query.filter(Environment.id == id).first()
-            elif name is not None:
-                return query.filter(Environment.name == name).first()
-            return None
+        query = db.session.query(Environment)
+        if id is not None:
+            return query.filter(Environment.id == id).first()
+        elif name is not None:
+            return query.filter(Environment.name == name).first()
+        return None
 
     @staticmethod
     def create_environment(template_name: str, environment_name: str) -> Optional[Environment]:
@@ -82,24 +85,22 @@ class EnvironmentActions():
             template_name (str): a valid template ID
             environment_name (Optional): a new unique name
         """         
-        with Session() as session:
-            try:
-                # to avoid circular import 
-                from .template import TemplateActions
-                
-                template = TemplateActions.get_template(name=template_name)
-                if not template or template.state == "DISABLED":
-                    raise ValueError("the requested template is disabled or not found")
-                env = Environment(name=environment_name, template_id=template.id, status=StatusEnum.CREATING, creation_time=datetime.now())
-                
-                session.add(env)
-                session.commit()
-                session.refresh(env)
+        try:
+            # to avoid circular import 
+            from .template import TemplateActions
             
-            except Exception as e:
-                env = None
-                session.rollback()
-                raise
+            template = TemplateActions.get_template(name=template_name)
+            if not template or template.state == "DISABLED":
+                raise ValueError("the requested template is disabled or not found")
+            env = Environment(name=environment_name, template_id=template.id, status=StatusEnum.CREATING, creation_time=datetime.now())
+            
+            db.session.add(env)
+            db.session.commit()
+            db.session.refresh(env)
+        
+        except Exception as e:
+            env = None
+            raise
         return env
         
     @staticmethod
@@ -112,15 +113,14 @@ class EnvironmentActions():
         if (env := EnvironmentActions.get_environment(id=id, name=name)) is None:
             raise ValueError("Environment not found")
         
-        with Session() as session:
-            update_env = session.query(Environment).filter(Environment.id == env.id).one()
-            current_status = update_env.status
-            
-            if current_status == StatusEnum.DESTROYED:
-                raise ValueError("Destroyed environment cannot be updated")
+        update_env = db.session.query(Environment).filter(Environment.id == env.id).one()
+        current_status = update_env.status
+        
+        if current_status == StatusEnum.DESTROYED:
+            raise ValueError("Destroyed environment cannot be updated")
 
-            update_env.status = StatusEnum(current_status.value + 1)
-            session.commit()
-            session.refresh(update_env)
-            
-            return update_env.status
+        update_env.status = StatusEnum(current_status.value + 1)
+        db.session.commit()
+        db.session.refresh(update_env)
+        
+        return update_env.status

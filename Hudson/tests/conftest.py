@@ -1,11 +1,7 @@
 import pytest
-from hudson.models.base import Base, ENGINE, Session
+from hudson.app import create_app
 
-@pytest.fixture(scope='session')
-def db():
-    try:
-        with Session() as session:
-            Base.metadata.create_all(bind=ENGINE)
-            yield session
-    finally:
-        Base.metadata.drop_all(bind=ENGINE)
+@pytest.fixture(scope='session', autouse=True)
+def app():
+    app = create_app()
+    yield app
