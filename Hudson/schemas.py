@@ -21,6 +21,10 @@ class ListTemplatesSchema(_BaseSchema):
 
 class TemplatesNameSchema(_BaseSchema):
     name: str
+    
+
+class GithubUrlSchema(_BaseSchema):
+    url: str
 
 
 class EnvironmentSchema(_BaseSchema):

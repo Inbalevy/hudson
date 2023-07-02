@@ -2,8 +2,8 @@ import pytest
 from datetime import datetime
 
 from hudson.models import Template, TemplateActions, StateEnum
+from hudson.models.template import BadStateError, DependencyError
 from .fixtures import template, disabled_template, unused_template, environment, test_session, client
-    
     
 def test_list_templates(template, disabled_template, client):
     no_filter = client.get('/templates')
@@ -16,14 +16,12 @@ def test_list_templates(template, disabled_template, client):
     assert filtered.json[0]['state'] == "ENABLED"
     
     
-# def test_get_template_details(template):
-#     template_by_id = TemplateActions.get_template(id = template.id)
-#     assert template_by_id == template
-    
-#     template_by_name = TemplateActions.get_template(name = template.name)
-#     assert template_by_name == template
-    
-#     assert TemplateActions.get_template(name = "non_existing_name") is None
+def test_get_template_details(template, client):
+    response = client.get(f'/template?name={template.name}')
+    assert response.status_code == 200
+    assert response.json['id'] == template.id
+
+    assert client.get(f'/template?name=nonExistingName').status_code == 404
     
 
 # def test_create_template():
@@ -32,13 +30,18 @@ def test_list_templates(template, disabled_template, client):
 #     assert TemplateActions.get_template(new_tempalte.id) == new_tempalte
     
 
-# def test_enable_template(template, disabled_template):
-#     assert TemplateActions.enable_template(disabled_template.id) == True
-#     assert TemplateActions.enable_template(template.id) == False
+def test_enable_template(template, disabled_template, unused_template, client):
+    response = client.put(f'/template?name={template.name}')
+    assert response.status_code == 400
+    response = client.put(f'/template?name={disabled_template.name}')
+    assert response.status_code == 200
+    assert template.state == StateEnum.ENABLED
+    assert client.put(f'/template?name=nonExistingName').status_code == 404
 
 
-# def test_disable_template(template, disabled_template, unused_template, environment):
-#     assert TemplateActions.disable_template(unused_template.id) == True
-#     assert TemplateActions.disable_template(disabled_template.id) == False
-#     with pytest.raises(ValueError):
-#         TemplateActions.disable_template(template.id)
+def test_disable_template(template, disabled_template, unused_template, environment, client):
+    response = client.patch(f'/template?name={unused_template.name}')
+    assert response.status_code == 200
+    assert unused_template.state == StateEnum.DISABLED
+    assert client.patch(f'/template?name={disabled_template.name}').status_code == 400
+    assert client.patch(f'/template?name={template.name}').status_code == 409

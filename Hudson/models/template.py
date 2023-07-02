@@ -7,6 +7,15 @@ from enum import Enum, IntEnum, StrEnum
 class StateEnum(StrEnum):
     ENABLED = "ENABLED"
     DISABLED = "DISABLED"
+    
+    
+class DependencyError(Exception):
+    pass
+
+
+class BadStateError(Exception):
+    pass
+
 
 class Template(db.Model):
     """Template model for the DB
@@ -85,14 +94,14 @@ class TemplateActions():
         return template
     
     @staticmethod
-    def enable_template(id: Optional[int] = None, name: Optional[str] = None) -> bool:
+    def enable_template(id: Optional[int] = None, name: Optional[str] = None) -> Optional[bool]:
         """enable a template by id or name. return True if succeeded and false if the template was already enabled
         Args:
             id (Optional[int], optional): template_id. Defaults to None.
             name (Optional[str], optional): template_name. Defaults to None.
         """
         if (template := TemplateActions.get_template(id=id, name=name)) is None:
-            raise ValueError("Template not found.")
+            return None
 
         if template.state == StateEnum.ENABLED:
             return False
@@ -103,17 +112,17 @@ class TemplateActions():
         return True
     
     @staticmethod
-    def disable_template(id: Optional[int] = None, name: Optional[str] = None) -> bool:
+    def disable_template(id: Optional[int] = None, name: Optional[str] = None) -> Optional[bool]:
         """disable a template by id or name if no active environment is dependent on it. return True if succeeded and false if the template was already disabled
         Args:
             id (Optional[int], optional): template_id. Defaults to None.
             name (Optional[str], optional): template_name. Defaults to None.
         """
         if (template := TemplateActions.get_template(id=id, name=name)) is None:
-            raise ValueError("Template not found.")
+            return None
 
-        if template.state == "DISABLED":
-            return False
+        if template.state == StateEnum.DISABLED:
+            raise BadStateError("Template is already disabled")
 
         # to avoid circular import issue
         from .environment import Environment, StatusEnum
@@ -121,9 +130,9 @@ class TemplateActions():
             Environment.template_id == template.id,
             Environment.status.in_([StatusEnum.CREATING, StatusEnum.ACTIVE])
             ).first()):
-            raise ValueError("Cannot disable template with an active environment.")
+            raise DependencyError("Cannot disable template with an active environment.")
 
-        template.state = StateEnum.ENABLED
+        template.state = StateEnum.DISABLED
         db.session.commit()
 
         return True

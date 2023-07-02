@@ -1,55 +1,67 @@
 from flask import request
 from flask_restful import Resource
 from hudson.models import Template, TemplateActions
-from hudson.app.app import app
+from hudson.models.template import BadStateError, DependencyError
+from hudson.app import app
 from typing import Optional
 from flask_pydantic import validate
 
-from hudson.schemas import TemplateSchema, ListTemplatesSchema, TemplatesNameSchema
+from hudson.schemas import TemplateSchema, ListTemplatesSchema, TemplatesNameSchema, GithubUrlSchema
 
-class TemplateResource(Resource):   
-    def get(self, name: str):
+class TemplateResource(Resource): 
+    @validate(query=TemplatesNameSchema)  
+    def get(self):
         """get a template by name"""
-        template = TemplateActions.get_template(name = name)
+        template = TemplateActions.get_template(name = request.args.get("name"))
         if template:
-            return template, 200
+            return TemplateSchema.from_orm(template).dict(), 200
         return {"message": "Template not found"}, 404
 
+    @validate(query=GithubUrlSchema)  
     def post(self):
         """create a template by github url"""
         github_url = request.json.get("github_url")
         if not github_url:
             return {"message": "GitHub URL is required"}, 400
 
-        template = Template.create_template(github_url)
-        return template, 201
+        template = TemplateActions.create_template(github_url, 'validate_me')
+        return TemplateSchema.from_orm(template).dict(), 201
 
-    def put(self, name):
+    @validate(query=TemplatesNameSchema) 
+    def put(self):
         """enable a template"""
-        template = Template.get_template(name = name)
+        template = TemplateActions.get_template(name = request.args.get("name"))
         if not template:
             return {"message": "Template not found"}, 404
+        
+        if not TemplateActions.enable_template(template.id):
+            return {"message": "Template already enabled"}, 400
+        
+        return TemplateSchema.from_orm(template).dict(), 200
 
-        template.enable_template()
-        return template, 200
-
-    def patch(self, name):
+    @validate(query=TemplatesNameSchema) 
+    @validate(query=TemplatesNameSchema) 
+    def patch(self):
         """disable a template"""
-        template = Template.get_template(name = name)
+        template = TemplateActions.get_template(name = request.args.get("name"))
         if not template:
             return {"message": "Template not found"}, 404
 
-        template.disable_template()
-        return template, 200
+        try:
+            TemplateActions.disable_template(template.id)
+            return TemplateSchema.from_orm(template).dict(), 200
+        except BadStateError as e:
+            return {"message": str(e)}, 400
+        except DependencyError as e:
+            return {"message": str(e)}, 409
 
-    def delete(self, name):
+
+    @validate(query=TemplatesNameSchema) 
+    def delete(self):
         """remove a template"""
-        template = Template.get_template(name = name)
+        template = Template.get_template(name = request.args.get("name"))
         if not template:
             return {"message": "Template not found"}, 404
-
-        template.delete_template()
-        return {"message": "Template deleted"}, 200
 
 
 class TemplatesResource(Resource):   
