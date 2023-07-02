@@ -1,8 +1,8 @@
 import pytest
 from datetime import datetime
 
-from hudson.models import Template, TemplateActions
-from .fixtures import template, disabled_template, unused_template, environment, test_session, client
+from hudson.models import Template, TemplateActions, StateEnum
+from .fixtures import template, disabled_template, unused_template, environment, test_session
     
 
 def test_add_template(template, test_session):
@@ -12,7 +12,7 @@ def test_add_template(template, test_session):
     # Assert that the saved data matches the desired values
     assert saved_template.name == 'Example Template'
     assert saved_template.url == 'https://example.com/template'
-    assert saved_template.state == 'ENABLED'
+    assert saved_template.state == StateEnum.ENABLED
     
 def test_list_templates(template, disabled_template):
     assert len(TemplateActions.list_templates()) == 2

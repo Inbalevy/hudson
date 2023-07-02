@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Enum
 from typing import Optional
 from hudson.app import db
 
-class StatusEnum(enum.Enum):
+class StatusEnum(enum.IntEnum):
     CREATING = 1
     ACTIVE = 2
     DESTROYING = 3
@@ -23,7 +23,7 @@ class Environment(db.Model):
     name = db.Column(db.String(255), nullable=False)
     template_id = db.Column(db.Integer, db.ForeignKey('templates.id'), nullable=False)
     status = db.Column(db.Enum(StatusEnum), default=StatusEnum.CREATING)
-    creation_time = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    creation_time = db.Column(db.String(255), nullable=False)
 
     def __repr__(self):
         return f"Environment(id={self.id}, name='{self.name}', template='{self.template_id}', status={self.status}, creation_time='{self.creation_time}')"
@@ -92,7 +92,7 @@ class EnvironmentActions():
             template = TemplateActions.get_template(name=template_name)
             if not template or template.state == "DISABLED":
                 raise ValueError("the requested template is disabled or not found")
-            env = Environment(name=environment_name, template_id=template.id, status=StatusEnum.CREATING, creation_time=datetime.now())
+            env = Environment(name=environment_name, template_id=template.id, status=StatusEnum.CREATING, creation_time=datetime.now().isoformat())
             
             db.session.add(env)
             db.session.commit()

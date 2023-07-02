@@ -1,5 +1,5 @@
 import pytest
-from hudson.models import Template, Environment, StatusEnum
+from hudson.models import Template, Environment, StatusEnum, StateEnum
 from datetime import datetime
 import pytest
 from hudson.app import db, create_app
@@ -26,7 +26,7 @@ def client(app):
 @pytest.fixture()
 def template(test_session):
     # Create a new Template
-    template = Template(name='Example Template', url='https://example.com/template', state="ENABLED", creation_time=datetime.now())
+    template = Template(name='Example Template', url='https://example.com/template', state=StateEnum.ENABLED, creation_time=datetime.now().isoformat())
     test_session.add(template)
     test_session.commit()
     yield template
@@ -37,7 +37,7 @@ def template(test_session):
 @pytest.fixture()
 def disabled_template(test_session):
     # Create a new desabled Template
-    template = Template(name='Example Disabled Template', url='https://example.com/disabled_template', state="DISABLED", creation_time=datetime.now())
+    template = Template(name='Example Disabled Template', url='https://example.com/disabled_template', state=StateEnum.DISABLED, creation_time=datetime.now().isoformat())
     test_session.add(template)
     test_session.commit()
     yield template
@@ -48,7 +48,7 @@ def disabled_template(test_session):
 @pytest.fixture()
 def unused_template(test_session):
     # Create a new desabled Template
-    template = Template(name='Example Unused Template', url='https://example.com/unused_template', state="ENABLED", creation_time=datetime.now())
+    template = Template(name='Example Unused Template', url='https://example.com/unused_template', state=StateEnum.ENABLED, creation_time=datetime.now().isoformat())
     test_session.add(template)
     test_session.commit()
     yield template
@@ -59,7 +59,7 @@ def unused_template(test_session):
 @pytest.fixture()
 def environment(test_session, template):
     # Create a new Environment associated with the Template
-    environment = Environment(name='Example Environment', template_id=template.id, status=StatusEnum.CREATING, creation_time=datetime.now())
+    environment = Environment(name='Example Environment', template_id=template.id, status=StatusEnum.CREATING, creation_time=datetime.now().isoformat())
     test_session.add(environment)
     test_session.commit()
     yield environment
@@ -70,7 +70,7 @@ def environment(test_session, template):
 @pytest.fixture()
 def destroyed_environment(test_session, template):
     # Create a new Environment associated with the Template
-    environment = Environment(name='Example Destroyed Environment', template_id=template.id, status=StatusEnum.DESTROYED, creation_time=datetime.now())
+    environment = Environment(name='Example Destroyed Environment', template_id=template.id, status=StatusEnum.DESTROYED, creation_time=datetime.now().isoformat())
     test_session.add(environment)
     test_session.commit()
     yield environment

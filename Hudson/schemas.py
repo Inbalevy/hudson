@@ -1,25 +1,31 @@
 from datetime import datetime
-from pydantic import BaseModel
-from models import StatusEnum
+from pydantic import BaseModel, Field
+from hudson.models import StatusEnum, StateEnum
 
-
-class TemplateSchema(BaseModel):
-    id: int
-    name: str
-    github_url: str
-    enabled: bool
-    creation_time: datetime
-
+class _BaseSchema(BaseModel):
     class Config:
         orm_mode = True
+    
+
+class TemplateSchema(_BaseSchema):
+    id: int
+    name: str
+    url: str
+    state: StateEnum
+    creation_time: str
         
 
-class EnvironmentSchema(BaseModel):
+class ListTemplatesSchema(_BaseSchema):
+    only_enabled: bool = Field(default=False)
+
+
+class TemplatesNameSchema(_BaseSchema):
+    name: str
+
+
+class EnvironmentSchema(_BaseSchema):
     id: int
     name: str
     template_id: int
-    status: StatusEnum
+    status: StatusEnum = StatusEnum.CREATING
     creation_time: datetime
-
-    class Config:
-        orm_mode = True

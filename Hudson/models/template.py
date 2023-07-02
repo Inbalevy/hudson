@@ -2,6 +2,11 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Enum
 from typing import Optional
 from hudson.app import db
+from enum import Enum, IntEnum, StrEnum
+
+class StateEnum(StrEnum):
+    ENABLED = "ENABLED"
+    DISABLED = "DISABLED"
 
 class Template(db.Model):
     """Template model for the DB
@@ -14,8 +19,8 @@ class Template(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     url = db.Column(db.String(255), nullable=False)
-    state = db.Column(db.Enum('ENABLED', 'DISABLED', name='state_enum'), default='ENABLED')
-    creation_time = db.Column(db.DateTime, nullable=False)
+    state = db.Column(db.Enum(StateEnum), default=StateEnum.ENABLED)
+    creation_time = db.Column(db.String(255), nullable=False)
     
     def __repr__(self):
         return f"Template(id={self.id}, name='{self.name}', url='{self.url}', state={self.state}, creation_time='{self.creation_time}')"
@@ -39,7 +44,7 @@ class TemplateActions():
 
         templates = db.session.query(Template)
         if only_enabled:
-            templates = templates.filter(Template.state == "ENABLED")
+            templates = templates.filter(Template.state == StateEnum.ENABLED)
         templates = templates.all()
         return templates
 
@@ -70,7 +75,7 @@ class TemplateActions():
             name (Optional): repository name from github api
         """         
         try:
-            template = Template(name=name, url=github_url, state="ENABLED", creation_time=datetime.now())
+            template = Template(name=name, url=github_url, state=StateEnum.ENABLED, creation_time=datetime.now().isoformat())
             db.session.add(template)
             db.session.commit()
             db.session.refresh(template)
@@ -89,10 +94,10 @@ class TemplateActions():
         if (template := TemplateActions.get_template(id=id, name=name)) is None:
             raise ValueError("Template not found.")
 
-        if template.state == "ENABLED":
+        if template.state == StateEnum.ENABLED:
             return False
 
-        template.state = "ENABLED"
+        template.state = StateEnum.ENABLED
         db.session.commit()
 
         return True
@@ -118,7 +123,7 @@ class TemplateActions():
             ).first()):
             raise ValueError("Cannot disable template with an active environment.")
 
-        template.state = "ENABLED"
+        template.state = StateEnum.ENABLED
         db.session.commit()
 
         return True

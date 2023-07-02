@@ -14,10 +14,7 @@ def create_app():
     api.add_resource(TemplateResource, '/template')
     api.add_resource(TemplatesResource, '/templates')
     return app
-
-@app.route('/')
-def test():
-    return "Hello World!"
+    
 
 def main():
     app = create_app()
