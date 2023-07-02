@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime
 
 from hudson.models import Template, TemplateActions
-from .db_fixtures import template, disabled_template, unused_template, environment, test_session, client
+from .fixtures import template, disabled_template, unused_template, environment, test_session, client
     
 
 def test_add_template(template, test_session):

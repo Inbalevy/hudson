@@ -3,7 +3,7 @@ from datetime import datetime
 from requests import get, post, put, patch, delete
 
 from hudson.models import Template, Environment, EnvironmentActions, StatusEnum
-from .db_fixtures import template, disabled_template, environment, destroyed_environment, test_session
+from .fixtures import template, disabled_template, environment, destroyed_environment, test_session
     
 
 def test_add_environment(environment, test_session):
