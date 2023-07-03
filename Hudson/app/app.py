@@ -13,6 +13,7 @@ def add_resources(api):
     api.add_resource(EnvironmentResource, '/environment')
     api.add_resource(EnvironmentsResource, '/environments')
 
+
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
