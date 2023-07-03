@@ -2,7 +2,7 @@ import pytest
 
 from .fixtures import template, disabled_template, unused_template, environment, test_session
 from hudson.models import Template, TemplateActions, StateEnum
-from hudson.models.template import BadStateError, DependencyError
+from hudson.models.template import TemplateDisabledError, DependencyError
     
 
 def test_add_template(template, test_session):
@@ -44,7 +44,7 @@ def test_enable_template(template, disabled_template):
 
 def test_disable_template(template, disabled_template, unused_template, environment):
     assert TemplateActions.disable_template(unused_template.id) == True
-    with pytest.raises(BadStateError):
+    with pytest.raises(TemplateDisabledError):
         TemplateActions.disable_template(disabled_template.id) == False
     with pytest.raises(DependencyError):
         TemplateActions.disable_template(template.id)

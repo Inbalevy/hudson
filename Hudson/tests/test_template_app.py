@@ -1,6 +1,6 @@
 from .fixtures import template, disabled_template, unused_template, environment, test_session, client
 from hudson.models import Template, TemplateActions, StateEnum
-from hudson.models.template import BadStateError, DependencyError
+from hudson.models.template import TemplateDisabledError, DependencyError
     
 def test_list_templates(template, disabled_template, client):
     no_filter = client.get('/templates')

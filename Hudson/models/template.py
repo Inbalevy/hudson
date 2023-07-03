@@ -13,7 +13,7 @@ class DependencyError(Exception):
     pass
 
 
-class BadStateError(Exception):
+class TemplateDisabledError(Exception):
     pass
 
 
@@ -122,7 +122,7 @@ class TemplateActions():
             return None
 
         if template.state == StateEnum.DISABLED:
-            raise BadStateError("Template is already disabled")
+            raise TemplateDisabledError("Template is already disabled")
 
         # to avoid circular import issue
         from .environment import Environment, StatusEnum

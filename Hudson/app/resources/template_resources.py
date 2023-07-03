@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from hudson.models import Template, TemplateActions
-from hudson.models.template import BadStateError, DependencyError
+from hudson.models.template import TemplateDisabledError, DependencyError
 from hudson.app import app
 from typing import Optional
 from flask_pydantic import validate
@@ -50,7 +50,7 @@ class TemplateResource(Resource):
         try:
             TemplateActions.disable_template(template.id)
             return TemplateSchema.from_orm(template).dict(), 200
-        except BadStateError as e:
+        except TemplateDisabledError as e:
             return {"message": str(e)}, 400
         except DependencyError as e:
             return {"message": str(e)}, 409

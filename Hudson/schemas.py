@@ -44,6 +44,11 @@ class ListEnvironmentSchema(_BaseSchema):
     exclude_destroyed: bool = Field(default=True)
     name: Optional[str] = Field(default=None)
     status: Optional[list[StatusEnum]] = Field(default=None)
+        
+
+class CreateEnvironmentSchema(_BaseSchema):
+    template_name: str
+    environment_name: str
 
 
 class EnvironmentNameSchema(_BaseSchema):

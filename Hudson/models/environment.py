@@ -11,6 +11,14 @@ class StatusEnum(enum.IntEnum):
     DESTROYED = 4
 
 
+class EnvironmentDestroyedError(Exception):
+    pass
+
+
+class TemplateDisabledError(Exception):
+    pass
+
+
 class Environment(db.Model):
     """Environment model for the DB
 
@@ -91,7 +99,7 @@ class EnvironmentActions():
             
             template = TemplateActions.get_template(name=template_name)
             if not template or template.state == "DISABLED":
-                raise ValueError("the requested template is disabled or not found")
+                raise TemplateDisabledError("the requested template is disabled or not found")
             env = Environment(name=environment_name, template_id=template.id, status=StatusEnum.CREATING, creation_time=datetime.now().isoformat())
             
             db.session.add(env)
@@ -111,13 +119,13 @@ class EnvironmentActions():
             name (Optional[str], optional): template_name. Defaults to None.
         """
         if (env := EnvironmentActions.get_environment(id=id, name=name)) is None:
-            raise ValueError("Environment not found")
+            return None
         
         update_env = db.session.query(Environment).filter(Environment.id == env.id).one()
         current_status = update_env.status
         
         if current_status == StatusEnum.DESTROYED:
-            raise ValueError("Destroyed environment cannot be updated")
+            raise EnvironmentDestroyedError("Destroyed environment cannot be updated")
 
         update_env.status = StatusEnum(current_status.value + 1)
         db.session.commit()
