@@ -38,7 +38,6 @@ class TemplateResource(Resource):
         return TemplateSchema.from_orm(template).dict(), 200
 
     @validate(query=TemplatesNameSchema) 
-    @validate(query=TemplatesNameSchema) 
     def patch(self):
         """disable a template"""
         template = TemplateActions.get_template(name = request.args.get("name"))
