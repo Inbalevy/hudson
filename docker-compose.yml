@@ -18,22 +18,15 @@ services:
       interval: 1s
       timeout: 5s
       retries: 10
-    # volumes:
-    #   - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    tty: true
+    tty: True
     volumes:
-      - ./Hudson:/hudson
+      - .:/hudson
     ports:
       - 5000:5000
-    environment:
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=hudsondb
-      - POSTGRES_USER=mantanav
-      - POSTGRES_PASSWORD=HouseOfTemplates
-    command: HudsonAPP
+    command: python hudson/app/app.py

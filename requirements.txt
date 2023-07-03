@@ -3,7 +3,6 @@ pytest
 psycopg2
 SQLAlchemy
 flask
-flask-RESTful
+flask-restful
 flask_sqlalchemy
-flask_pydantic 
-requests
+flask_pydantic
