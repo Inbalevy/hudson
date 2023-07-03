@@ -1,9 +1,8 @@
 import pytest
-from datetime import datetime
 
+from .fixtures import template, disabled_template, unused_template, environment, test_session
 from hudson.models import Template, TemplateActions, StateEnum
 from hudson.models.template import BadStateError, DependencyError
-from .fixtures import template, disabled_template, unused_template, environment, test_session
     
 
 def test_add_template(template, test_session):

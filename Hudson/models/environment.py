@@ -49,7 +49,7 @@ class EnvironmentActions():
         environments = db.session.query(Environment)
         
         # Assuming that if a user has chosen a specific filter it should override the default filter
-        if not (status or name) and exclude_destroyed:
+        if exclude_destroyed and not (status or name):
             return environments.filter(Environment.status != StatusEnum.DESTROYED).all()
         
         if status:

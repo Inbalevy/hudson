@@ -8,11 +8,16 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
 db = SQLAlchemy(app)
 
-def create_app():
-    api = Api(app)    
-    from .resources import TemplateResource, TemplatesResource
+def add_resources(api):
+    from hudson.app.resources import EnvironmentResource, EnvironmentsResource, TemplateResource, TemplatesResource
     api.add_resource(TemplateResource, '/template')
     api.add_resource(TemplatesResource, '/templates')
+    api.add_resource(EnvironmentResource, '/environment')
+    api.add_resource(EnvironmentsResource, '/environments')
+
+def create_app():
+    api = Api(app)  
+    add_resources(api)
     return app
     
 

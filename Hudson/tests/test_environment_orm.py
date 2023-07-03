@@ -1,9 +1,7 @@
 import pytest
-from datetime import datetime
-from requests import get, post, put, patch, delete
 
-from hudson.models import Template, Environment, EnvironmentActions, StatusEnum
 from .fixtures import template, disabled_template, environment, destroyed_environment, test_session
+from hudson.models import Template, Environment, EnvironmentActions, StatusEnum
     
 
 def test_add_environment(environment, test_session):

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, Field
 from hudson.models import StatusEnum, StateEnum
 
@@ -13,6 +14,10 @@ class TemplateSchema(_BaseSchema):
     url: str
     state: StateEnum
     creation_time: str
+        
+
+class ListTemplatesSchema(_BaseSchema):
+    only_enabled: bool = Field(default=False)
         
 
 class ListTemplatesSchema(_BaseSchema):
@@ -32,4 +37,14 @@ class EnvironmentSchema(_BaseSchema):
     name: str
     template_id: int
     status: StatusEnum = StatusEnum.CREATING
-    creation_time: datetime
+    creation_time: str
+        
+
+class ListEnvironmentSchema(_BaseSchema):
+    exclude_destroyed: bool = Field(default=True)
+    name: Optional[str] = Field(default=None)
+    status: Optional[list[StatusEnum]] = Field(default=None)
+
+
+class EnvironmentNameSchema(_BaseSchema):
+    name: str
