@@ -10,7 +10,7 @@ def test_list_templates(template, disabled_template, client):
     filtered = client.get("/templates?only_enabled=true")
     assert filtered.status_code == 200
     assert len(filtered.json) == 1
-    assert filtered.json[0]['state'] == "ENABLED"
+    assert filtered.json[0]['state'] == StateEnum.ENABLED
     
     
 def test_get_template_details(template, client):

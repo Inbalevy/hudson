@@ -1,3 +1,4 @@
+from hudson.models.template import TemplateActions
 from .fixtures import template, disabled_template, environment, destroyed_environment, test_session, client
 from hudson.models import Template, Environment, EnvironmentActions, StatusEnum
     
@@ -30,14 +31,15 @@ def test_create_environment(template, disabled_template, test_session, client):
     }
     response = client.post('/environment', data=data)
     assert response.status_code == 201
-    assert response.json == {'id': 1, 'name': 'test_create_env', 'template_name': "Example Template", 'status': 'ACTIVE'}
+    assert response.json['name'] == 'test create env'
+    assert response.json['template_id'] == TemplateActions.get_template(name='Example Template').id
+    assert response.json['status'] == StatusEnum.CREATING.value
     
-    bad_data = {'template_name': disabled_template.name, 'environment_name': "test_create_env"}
-    assert client.post('/environment', json=bad_data).status_code == 500
-    
-    test_session.delete(EnvironmentActions.get_environment(name="test_create_env"))
+    bad_data = {'template_name': disabled_template.name, 'environment_name': "test create env"}
+    assert client.post('/environment', data=bad_data).status_code == 500
+    test_session.delete(EnvironmentActions.get_environment(name='test create env'))
     test_session.commit()
-
+    
 
 def test_update_env_status(environment, client):
     assert environment.status == StatusEnum.CREATING

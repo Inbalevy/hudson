@@ -1,5 +1,7 @@
 import pytest
 
+from hudson.models.environment import EnvironmentDestroyedError, TemplateDisabledError
+
 from .fixtures import template, disabled_template, environment, destroyed_environment, test_session
 from hudson.models import Template, Environment, EnvironmentActions, StatusEnum
     
@@ -36,7 +38,7 @@ def test_create_environment(template, disabled_template, test_session):
     new_env = EnvironmentActions.create_environment(template_name=template.name, environment_name='Created Env')
     assert isinstance(new_env, Environment)
     assert EnvironmentActions.get_environment(new_env.id) == new_env
-    with pytest.raises(ValueError):
+    with pytest.raises(TemplateDisabledError):
         EnvironmentActions.create_environment(template_name=disabled_template.name, environment_name='Bad Env')
     test_session.delete(new_env)
     test_session.commit()
@@ -47,5 +49,5 @@ def test_update_env_status(environment):
     assert EnvironmentActions.update_environment_status(environment.id) == StatusEnum.ACTIVE
     assert EnvironmentActions.update_environment_status(environment.id) == StatusEnum.DESTROYING
     assert EnvironmentActions.update_environment_status(environment.id) == StatusEnum.DESTROYED
-    with pytest.raises(ValueError):
+    with pytest.raises(EnvironmentDestroyedError):
         EnvironmentActions.update_environment_status(environment.id)

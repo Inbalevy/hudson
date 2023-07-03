@@ -3,6 +3,7 @@ import enum
 from sqlalchemy import Column, Integer, String, DateTime, Enum
 from typing import Optional
 from hudson.app import db
+from hudson.models.template import StateEnum
 
 class StatusEnum(enum.IntEnum):
     CREATING = 1
@@ -98,7 +99,7 @@ class EnvironmentActions():
             from .template import TemplateActions
             
             template = TemplateActions.get_template(name=template_name)
-            if not template or template.state == "DISABLED":
+            if not template or template.state == StateEnum.DISABLED:
                 raise TemplateDisabledError("the requested template is disabled or not found")
             env = Environment(name=environment_name, template_id=template.id, status=StatusEnum.CREATING, creation_time=datetime.now().isoformat())
             

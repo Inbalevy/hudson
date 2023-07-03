@@ -17,12 +17,11 @@ class EnvironmentResource(Resource):
             return EnvironmentSchema.from_orm(environment).dict(), 200
         return {"message": "Environment not found"}, 404
 
-    @validate(query=CreateEnvironmentSchema)  
+    @validate(form=CreateEnvironmentSchema)  
     def post(self):
         """create a environment by name and template_name"""
-        data = request.get_json()
-        template_name = data.get('template_name')
-        environment_name = data.get('environment_name')
+        template_name = request.form.get('template_name')
+        environment_name = request.form.get('environment_name')
         try:
             environment = EnvironmentActions.create_environment(template_name, environment_name)
             return EnvironmentSchema.from_orm(environment).dict(), 201
