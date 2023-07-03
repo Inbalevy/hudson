@@ -26,7 +26,7 @@ class Template(db.Model):
     __tablename__ = 'templates'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False, unique=True)
     url = db.Column(db.String(255), nullable=False)
     state = db.Column(db.Enum(StateEnum), default=StateEnum.ENABLED)
     creation_time = db.Column(db.String(255), nullable=False)

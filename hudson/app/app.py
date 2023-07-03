@@ -20,14 +20,20 @@ def create_app():
     db.init_app(app)
     api = Api(app)  
     add_resources(api)
-    return app
+
+    @app.route('/')
+    # basic home screen
+    def hello():
+        return 'Welcome to hudson!'
     
+    return app
+
 
 def main():
     app = create_app()
     with app.app_context():
         db.create_all()
-        
+                
     app.run(host='0.0.0.0', port=5000, debug=True)
     
 if __name__ == '__main__':
