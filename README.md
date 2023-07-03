@@ -15,4 +15,3 @@ To run the tests after installation, run `pytest .`
 
 Open tasks:
 - Validate create template using github API and get template's name
-- Assert that environment name is unique
