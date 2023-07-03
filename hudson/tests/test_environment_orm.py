@@ -1,6 +1,6 @@
 import pytest
 
-from hudson.models.environment import EnvironmentDestroyedError, TemplateDisabledError
+from hudson.models.environment import EnvironmentDestroyedError, TemplateDisabledError, EnvironmentNameUnavailable
 
 from .fixtures import template, disabled_template, environment, destroyed_environment, test_session
 from hudson.models import Template, Environment, EnvironmentActions, StatusEnum
@@ -40,6 +40,8 @@ def test_create_environment(template, disabled_template, test_session):
     assert EnvironmentActions.get_environment(new_env.id) == new_env
     with pytest.raises(TemplateDisabledError):
         EnvironmentActions.create_environment(template_name=disabled_template.name, environment_name='Bad Env')
+    with pytest.raises(EnvironmentNameUnavailable):
+        EnvironmentActions.create_environment(template_name=template.name, environment_name='Created Env')
     test_session.delete(new_env)
     test_session.commit()
 

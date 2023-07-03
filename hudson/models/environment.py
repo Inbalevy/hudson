@@ -20,6 +20,10 @@ class TemplateDisabledError(Exception):
     pass
 
 
+class EnvironmentNameUnavailable(Exception):
+    pass
+
+
 class Environment(db.Model):
     """Environment model for the DB
 
@@ -101,6 +105,8 @@ class EnvironmentActions():
             template = TemplateActions.get_template(name=template_name)
             if not template or template.state == StateEnum.DISABLED:
                 raise TemplateDisabledError("the requested template is disabled or not found")
+            if EnvironmentActions.get_environment(name=environment_name) is not None:
+                raise EnvironmentNameUnavailable("Looks like there is already an existing environment with that name.")
             env = Environment(name=environment_name, template_id=template.id, status=StatusEnum.CREATING, creation_time=datetime.now().isoformat())
             
             db.session.add(env)
