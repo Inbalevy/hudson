@@ -2,7 +2,7 @@ from datetime import datetime
 import enum
 from sqlalchemy import Column, Integer, String, DateTime, Enum
 from typing import Optional
-from hudson.app import db
+from hudson.database import db
 from hudson.models.template import StateEnum
 
 class StatusEnum(enum.IntEnum):

@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Enum
 from typing import Optional
-from hudson.app import db
+from hudson.database import db
 from enum import Enum, IntEnum, StrEnum
 
 class StateEnum(StrEnum):

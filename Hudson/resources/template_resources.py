@@ -2,8 +2,6 @@ from flask import request
 from flask_restful import Resource
 from hudson.models import Template, TemplateActions
 from hudson.models.template import TemplateDisabledError, DependencyError
-from hudson.app import app
-from typing import Optional
 from flask_pydantic import validate
 
 from hudson.schemas import TemplateSchema, ListTemplatesSchema, TemplatesNameSchema, GithubUrlSchema

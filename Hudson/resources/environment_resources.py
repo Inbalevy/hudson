@@ -2,7 +2,6 @@ from flask import request
 from flask_restful import Resource
 from hudson.models import Environment, EnvironmentActions
 from hudson.models.environment import EnvironmentDestroyedError, TemplateDisabledError
-from hudson.app import app
 from typing import Optional
 from flask_pydantic import validate
 

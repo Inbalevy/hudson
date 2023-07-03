@@ -2,7 +2,8 @@ import pytest
 from hudson.models import Template, Environment, StatusEnum, StateEnum
 from datetime import datetime
 import pytest
-from hudson.app import db, create_app
+from hudson.database import db
+from hudson.app import create_app
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -10,7 +11,7 @@ def test_session(app):
     with app.app_context():
         try:
             db.create_all()
-            yield db.session   
+            yield db.session 
         finally:
             db.drop_all()
             db.session.remove
